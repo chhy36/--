@@ -1,0 +1,601 @@
+#include<iostream>
+#include <iomanip> 
+#include<string.h> 
+#include<stdlib.h> 
+using namespace std;
+struct Client
+{
+	char name[20]; //姓名
+	char ID_num[20]; //身份证号码
+	char account[20]; //账号
+	char password[20]; //密码
+	double money; //金额
+	bool IsLost; //是否挂失
+	bool IsLock; //银行卡是否被锁定
+	Client* link;
+	Client(Client* ptr = NULL) { link = ptr; }
+	Client(char n[], char i[], char a[], char p[], double m, bool Is, bool IL, Client* ptr = NULL)
+	{ //构造函数
+		strcpy_s(name, n); strcpy_s(ID_num, i); strcpy_s(account, a); strcpy_s(password, p); money = m; IsLost = Is; IsLock = IL; link = ptr;
+	}
+	void Deposit()
+	{ //存款
+		double m; 
+		cout << "\n\n\t\t请输入存款金额:<\t\t>\b\b\b\b\b\b\b\b\b\b\b";
+		cin >> m;
+		money = money + m;
+		cout << "\n\n\t\t**********存款成功!***********";
+		cout << endl;
+	}
+	void Withdrawals()
+	{ //取款
+		double m;
+		while (1)
+		{
+			cout << "\n\n\t\t请输入取款金额:<\t\t>\b\b\b\b\b\b\b\b\b\b\b";
+			cin >> m;
+			if (m > 0)
+			{
+				if (money < m)
+				{
+					cout << "\n\n\t\t**********对不起，您的余额不足*************" << endl;
+				}
+				else {
+					money = money - m; cout << "\n\n\t\t**********交易成功***********";
+					cout << endl; break;
+				}
+			}
+			else
+				cout << "\n\n\t\t**********你输入的金额有误，请输入数值大于0的金额数！*************" << endl;
+		}
+	}
+	void ChangPassword()
+	{ //修改密码
+		char newPassword1[20], newPassword2[20];
+		for (int i = 0; i < 20; i++)
+		{
+			newPassword1[i] = '\0'; newPassword2[i] = '\0';
+		}
+		while (1)
+		{
+			cout << "\n\n\t\t请输入新密码:<\t\t\t\t>\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+			cin >> newPassword1;
+			cout << endl;
+			cout << "\n\n\t\t请再次输入密码:<\t\t\t\t>\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+			cin >> newPassword2;
+			if (strcmp(newPassword1, newPassword2) == 0)
+			{
+				strcpy_s(password, newPassword1);
+				cout << "\n\n\t\t**********密码修改成功！***********" << endl; break;
+			}
+			cout << endl;
+			cout << "\n\n\t\t**********两次输入的密码不一致，请重新输入！***********";
+		}
+	} /* *打印分割行*/
+	void printSeperatorLine(int FIELD_NUM, int FIELD_WIDTH)
+	{
+		cout << "\n"; cout << "|"; //FIELD_NUM定义为全局只读变量，表示用户信息域的数量，这里只有姓名，ID，账号，余额所以是4 //FIELD_WIDTH定义为只读全局变量，用来控制输出显示表格中提供给每个域的宽度，这个可以根据自己显示器的宽度进行适当调整
+		for (int k = 0; k < FIELD_NUM; ++k)
+		{
+			for (int i = 0; i < FIELD_WIDTH; ++i)
+			{
+				cout << "-";
+			} cout << "|";
+		}
+		cout << endl;
+	}
+	void printHeadLine(int FIELD_WIDTH)
+	{
+		cout << "|"; //设置输出“姓名”长度为18，不够18个字符则用空格字符填补，设置为靠左对齐（没有居中对齐），如果超过18个字符，那么会被截断为18个字符cout<<setw(FIELD_WIDTH)<<setfill(' ')<<setiosflags(ios::left)<<"姓名"<<"|"; 
+		cout << setw(FIELD_WIDTH) << setfill(' ') << setiosflags(ios::left) << "ID" << "|";
+		cout << setw(FIELD_WIDTH) << setfill(' ') << setiosflags(ios::left) << "账号" << "|";
+		cout << setw(FIELD_WIDTH) << setfill(' ') << setiosflags(ios::left) << "余额" << "|";
+	}
+	/* *查询个人卡中信息*/
+	void InquiryIndividual()
+	{
+		int y = 4, FIELD_WIDTH = 18, x = 18;
+		printSeperatorLine(y, x);
+		printHeadLine(x);
+		printSeperatorLine(y, x);
+		cout << "|" << setw(FIELD_WIDTH) << setfill(' ') << setiosflags(ios::left) << name << "|";
+		cout << setw(FIELD_WIDTH) << setfill(' ') << setiosflags(ios::left) << ID_num << "|";
+		cout << setw(FIELD_WIDTH) << setfill(' ') << setiosflags(ios::left) << account << "|";
+		cout << setw(FIELD_WIDTH) << setfill(' ') << setiosflags(ios::left) << money << "|"; printSeperatorLine(y, x);
+	}
+};
+class system
+{
+private: Client* first, * last;
+public:
+	system()
+	{
+		last = first = new Client();
+	}
+	system(char n[], char i[], char a[], char p[], double m, bool Is, bool IL)
+	{
+		last = first = new Client(n, i, a, p, m, Is, IL);
+	}
+	~system() { makeEmpty(); }
+	void makeEmpty();
+	int Length()const; //int IsEqual(char h[],char n[]); //判断两个字符串是否相等
+	Client* getHead()const {
+		return first;
+	}
+	Client* Search(char h[]); //在链表中搜索与给定字符串相等的节点，返回节点地址
+	Client* Locate(int i);
+	bool Append(char n[], char i[], char a[], char p[], double m, bool Is, bool IL); //添加一个节点到链表尾端
+	bool Remove(int k);
+	bool IsEmpty()const { return first->link == NULL ? true : false; }
+	//判断链表是否为空
+	void CreatAccount();
+	//创建一个账号
+	void UsersLogIn();
+	//用户登录
+	void ReportTheLost();
+	//挂失银行卡
+	void ResetPassword();
+	//重置密码
+	void CancelUsers();
+	//注销用户
+	void InquiryUsers();
+	//查询用户信息
+	void Unlost();
+	//解除银行卡的挂失状态
+	void UnLock();
+	//解除银行卡的锁定状态
+	void Transfer(Client*& c1);
+	//转账：从c1节点的客户转账到其他客户
+	void Menu();
+	//主菜单
+}s;
+void system::makeEmpty()
+{
+	Client* q; while (first->link != NULL)
+	{
+		q = first->link; first->link = q->link; delete q;
+	}
+};
+int system::Length()const
+{
+	Client* p = first->link; int count = 0; while (p != NULL)
+	{
+		p = p->link; count++;
+	}
+	return count;
+};
+Client* system::Search(char h[])
+{
+	//搜索与给定字符串相等的节点，返回节点地址，若没有搜索到，返回NULL 
+	Client* current = first->link;
+	while (current != NULL)
+		if (strcmp(h, current->account) == 0)break;
+		else
+			current = current->link; return current;
+}
+Client* system::Locate(int i)
+{
+	if (i < 0)
+		return NULL;
+	Client* current = first;
+	int k = 0;
+	while (current != NULL && k < i)
+	{
+		current = current->link; k++;
+	}
+	return current;
+}
+bool system::Append(char n[], char i[], char a[], char p[], double m, bool Is, bool IL)
+{
+	//添加一个节点到链表尾端
+	Client* newNode = new Client(n, i, a, p, m, Is, IL);
+	last->link = newNode;
+	newNode->link = NULL;
+	last = last->link;
+	return true;
+}
+void system::CreatAccount()
+{
+	//创建一个客户账号信息，若账号重复，则需重新输入账号；若两次密码输入不一致，则需重新输入密码
+	char n[20];
+	char r[20];
+	char a[20];
+	for (int i = 0; i < 20; i++)
+	{
+		n[i] = '\0'; r[i] = '\0'; a[i] = '\0';
+	}
+	cout << "\n\n\t\t请输入姓名:<\t\t\t\t>\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+	cin >> n;
+	//输入姓名
+	cout << endl;
+	cout << "\n\n\t\t请输入ID号:<\t\t\t\t>\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+	cin >> r;
+	//输入ID号
+	cout << endl;
+	while (1)
+	{
+		cout << "\n\n\t\t请输入账户号:<\t\t\t\t>\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+		cin >> a;
+		//输入账户号
+		Client* current1 = Search(a);
+		//在银行卡系统链表中搜索此账户，并判断链表中是否存在此账户
+		if (current1 != NULL)
+			cout << "\n\n\t\t*******该账号已存在，请重新输入账号！*******\b\b\b\b\b\b\b";
+		else break;
+	}
+	char Password1[20], Password2[20];
+	for (int i = 0; i < 20; i++)
+	{
+		Password1[i] = '\0'; Password2[i] = '\0';
+	}
+	while (1)
+	{
+		cout << "\n\n\t\t请输入新密码:<\t\t\t\t>\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+		cin >> Password1;
+		cout << endl;
+		cout << "\n\n\t\t请再次输入密码:<\t\t\t\t>\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+		cin >> Password2;
+		if (strcmp(Password1, Password2) == 0)
+		{
+			break;
+		}
+		cout << endl;
+		cout << "\n\n\t\t**********两次输入的密码不一致，请重新输入***********";
+	}
+	double m = 0.0;
+	bool Is = false;
+	bool IL = false;
+	Append(n, r, a, Password1, m, Is, IL);
+	//将用户信息收集之后，加入到银行卡系统链表尾端保存
+	cout << "\n\n\t\t*******创建账户成功！*******\b\b\b\b\b\b\b";
+	cout << endl;
+}
+void system::UsersLogIn()
+{
+	//用户登录
+	char LogInAccount[20], LogInPassword[20];
+	for (int i = 0; i < 20; i++)
+	{
+		LogInAccount[i] = '\0'; LogInPassword[i] = '\0';
+	}
+	cout << "\n\n\t请输入账号:<\t\t\t\t>\b\b\b\b\b\b\b";
+	cin >> LogInAccount;
+	cout << endl; Client* current = Search(LogInAccount);
+	//在银行卡系统链表中搜索此账户，并判断链表中是否存在此账户
+	if(current!=NULL) 
+	{
+		//账号需存在
+		if (current->IsLost == false)
+		{
+			//账号未挂失
+			if (current->IsLock == false)
+			{
+				//账号未被锁定
+				int LockCount = 0;
+				//客户每输入密码错误一次LockCount加一，当LockCount=3时，银行卡被锁定，不能登录，需解除锁定才能使用
+				while (LockCount < 3)
+				{
+					cout << "\n\n\t请输入密码:<\t\t\t\t>\b\b\b\b\b\b\b";
+					cin >> LogInPassword;
+					if (strcmp(LogInPassword, current->password) == 0)
+						break;
+					else {
+						LockCount++; cout << "\n\n\t密码不正确，请重新输入:\b\b\b\b\b\b\b";
+					}
+				}
+				if (LockCount == 3)
+				{
+					current->IsLock = true;
+					cout << "\n\n\t输入密码错误三次，您的账号已被封锁！\b\b\b\b\b\b\b";
+				}
+				else
+				{
+					int w;
+					cout << "\t<_____________________ THE CLIENT'S MENU ____________________>\n";
+					//客户菜单
+					cout << "\t|| (1)存款||\n";
+					cout << "\t|| (2)转账||\n";
+					cout << "\t|| (3)取款||\n";
+					cout << "\t|| (4)修改密码||\n";
+					cout << "\t|| (5)查询个人信息||\n";
+					cout << "\n\n\t\t 请选择操作(1--5):< >\b\b";
+					cin >> w;
+					switch (w)
+					{
+					case 1:current->Deposit(); break;
+					case 2:Transfer(current); break;
+					case 3:current->Withdrawals(); break;
+					case 4:current->ChangPassword(); break;
+					case 5:current->InquiryIndividual(); break;
+					}
+				}
+			}
+			else cout << "\n\n\t您的账号密码输入错误已三次，禁止输入!\b\b\b\b\b\b\b" << endl;
+		}
+		else cout << "\n\n\t您的账号已被挂失！\b\b\b\b\b\b\b" << endl;
+	}
+    else {cout << "\n\n\t不存在此用户\b\b\b\b\b\b\b" << endl; return;}
+}
+void system::ReportTheLost()
+{
+	//挂失银行卡，挂失后银行不能使用
+	char LogInAccount[20];
+	for (int i = 0; i < 20; i++)
+	{
+		LogInAccount[i] = '\0';
+	}
+	cout << "\n\n\t请输入账号:<\t\t\t>\b\b\b\b\b\b\b";
+	cin >> LogInAccount;
+	cout << endl;
+	Client* current = Search(LogInAccount);
+	if (current != NULL)
+	{
+		current->IsLost = true;
+		cout << "\n\n\t账号挂失成功！\b\b\b\b\b\b\b" << endl;
+	}
+	else
+	{
+		cout << "\n\n\t不存在此用户！\b\b\b\b\b\b\b" << endl;
+		return;
+	}
+}
+void system::ResetPassword()
+{
+	//重置密码
+	char LogInAccount[20];
+	for (int i = 0; i < 20; i++)
+	{
+		LogInAccount[i] = '\0';
+	}
+	cout << "\n\n\t请输入账号:<\t\t\t>\b\b\b\b\b\b\b";
+	cin >> LogInAccount;
+	cout << endl;
+	Client* current = Search(LogInAccount);
+	if (current != NULL)
+	{
+		char newPassword1[20], newPassword2[20];
+		for (int j = 0; j < 20; j++)
+		{
+			newPassword1[j] = '\0'; newPassword2[j] = '\0';
+		}
+		while (1)
+		{
+			cout << "\n\n\t请输入新密码:<\t\t\t>\b\b\b\b\b\b\b";
+			cin >> newPassword1;
+			cout << endl;
+			cout << "\n\n\t请再次输入密码:<\t\t\t>\b\b\b\b\b\b\b";
+			cin >> newPassword2;
+			if (strcmp(newPassword1, newPassword2) == 0)
+			{
+				strcpy_s(current->password, newPassword1);
+				cout << "\n\n\t密码重置成功！\b\b\b\b\b\b\b" << endl; break;
+			}
+			cout << endl;
+			cout << "\n\n\t两次密码输入不一致，请重新输入！\b\b\b\b\b\b\b";
+		}
+	}
+	else
+	{
+		cout << "\n\n\t不存在此用户！\b\b\b\b\b\b\b" << endl;
+		return;
+	}
+}
+void system::CancelUsers()
+{
+	//注销用户
+	char LogInAccount[20];
+	for (int i = 0; i < 20; i++)
+	{
+		LogInAccount[i] = '\0';
+	}
+	cout << "\n\n\t请输入账号:<\t\t\t>\b\b\b\b\b\b\b";
+	cin >> LogInAccount;
+	cout << endl;
+	Client* p = first, * current = first->link;
+	while (current != NULL)
+	{
+		if (strcmp(LogInAccount, current->account) == 0)break;
+		else
+		{
+			current = current->link; p = p->link;
+		}
+	}
+	if (current != NULL)
+	{
+		p->link = current->link;
+		delete current;
+		cout << "\n\n\t注销用户成功！\b\b\b\b\b\b\b" << endl;
+	}
+	else
+	{
+		cout << "\n\n\t不存在此用户！\b\b\b\b\b\b\b" << endl;
+		return;
+	}
+}
+void system::InquiryUsers()
+{
+	//查询用户信息
+	char LogInAccount[20];
+	for (int i = 0; i < 20; i++)
+	{
+		LogInAccount[i] = '\0';
+	}
+	cout << "\n\n\t请输入账号:<\t\t\t>\b\b\b\b\b\b\b";
+	cin >> LogInAccount;
+	cout << endl;
+	Client* current = Search(LogInAccount);
+	if (current != NULL)
+	{
+		int y = 6, FIELDWIDTH = 12, x = 12;
+		current->printSeperatorLine(y, x);
+		cout << "|";
+		//设置输出“姓名”长度为18，不够18个字符则用空格字符填补，设置为靠左对齐（没有居中对齐），如果超过18个字符，那么会被截断为18个字符
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << "姓名" << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << "ID" << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << "账号" << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << "余额" << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << "IsLost" << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << "IsLock" << "|";
+		current->printSeperatorLine(y, x);
+		cout << "|" << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << current->name << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << current->ID_num << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << current->account << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << current->money << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << current->IsLost << "|";
+		cout << setw(FIELDWIDTH) << setfill(' ') << setiosflags(ios::left) << current->IsLock << "|";
+		current->printSeperatorLine(y, x);
+	}
+	else
+	{
+		cout << "\n\n\t不存在此用户！\b\b\b\b\b\b\b" << endl;
+		return;
+	}
+}
+void system::Unlost()
+{
+	//解除银行卡的挂失状态
+	char LogInAccount[20];
+	for (int i = 0; i < 20; i++)
+	{
+		LogInAccount[i] = '\0';
+	}
+	cout << "\n\n\t请输入账号:<\t\t\t>\b\b\b\b\b\b\b";
+	cin >> LogInAccount;
+	cout << endl;
+	Client* current = Search(LogInAccount);
+	if (current != NULL)
+	{
+		if (current->IsLost == true)
+		{
+			current->IsLost = false;
+			cout << "\n\n\t账号解除挂失成功！\b\b\b\b\b\b\b" << endl;
+		}
+		else cout << "\n\n\t账号尚未挂失！\b\b\b\b\b\b\b" << endl;
+	}
+	else
+	{
+		cout << "\n\n\t不存在此用户！\b\b\b\b\b\b\b" << endl;
+		return;
+	}
+}
+void system::UnLock()
+{
+	//解除银行卡的锁定状态
+	char LogInAccount[20];
+	for (int i = 0; i < 20; i++)
+	{
+		LogInAccount[i] = '\0';
+	}
+	cout << "\n\n\t请输入账号:<\t\t\t>\b\b\b\b\b\b\b";
+	cin >> LogInAccount;
+	cout << endl;
+	Client* current = Search(LogInAccount);
+	if (current != NULL)
+	{
+		if (current->IsLock == true)
+		{
+			current->IsLock = false;
+			cout << "\n\n\t账号解除锁定成功！\b\b\b\b\b\b\b" << endl;
+		}
+		else cout << "\n\n\t账号尚未锁定！\b\b\b\b\b\b\b" << endl;
+	}
+	else
+	{
+		cout << "\n\n\t不存在此用户！\b\b\b\b\b\b\b" << endl;
+		return;
+	}
+}
+void system::Transfer(Client*& c1)
+{
+	//转账
+	char LogInAccount1[20], LogInAccount2[20];
+	for (int i = 0; i < 20; i++)
+	{
+		LogInAccount1[i] = '\0'; LogInAccount2[i] = '\0';
+	}
+	while (1)
+	{
+		cout << "\n\n\t请输入需要转入的账号:<\t\t\t>\b\b\b\b\b\b\b";
+		cin >> LogInAccount1;
+		cout << "\n\n\t请再次输入需要转入的账号:<\t\t\t>\b\b\b\b\b\b\b";
+		cin >> LogInAccount2;
+		if (strcmp(LogInAccount1, LogInAccount2) == 0)break;
+		else
+			cout << "\n\n\t两次账号输入不一致，请重新输入！\b\b\b\b\b\b\b" << endl;
+	}
+	cout << endl;
+	Client* c2 = Search(LogInAccount1);
+	if (c2 != NULL)
+	{
+		double output;
+		while (1)
+		{
+			cout << "\n\n\t请输入需要转出的金额:<\t\t\t>\b\b\b\b\b\b\b";
+			cin >> output;
+			if (output <= 0)
+			{
+				cout << "\n\n\t请输入金额大于0的数！\b\b\b\b\b\b\b" << endl;
+				continue;
+			}
+			if (output > c1->money)
+				cout << "您卡中当前余额为：" << c1->money << " 余额不足！" << "请重新输入！" << endl;
+			else break;
+		}
+		c1->money = c1->money - output;
+		c2->money = c2->money + output;
+		cout << "\n\n\t转账成功！\b\b\b\b\b\b\b" << endl;
+	}
+	else
+	{
+		cout << "\n\n\t不存在此用户！\b\b\b\b\b\b\b" << endl;
+		return;
+	}
+}
+void system::Menu()
+{
+	//主菜单
+	int v;
+	cout << "\n\n\n\n";
+	cout << "\t\t<_____________________银行卡管理系统_____________________>\n";
+	cout << endl;
+	cout << "\t\t<_______________________ THE MENU ______________________>\n";
+	cout << "\t\t|| (1)创建新用户||\n";
+	cout << "\t\t|| (2)用户登录||\n";
+	cout << "\t\t|| (3)挂失卡号||\n";
+	cout << "\t\t|| (4)重置密码||\n";
+	cout << "\t\t|| (5)注销用户||\n";
+	cout << "\t\t|| (6)查询用户信息||\n";
+	cout << "\t\t|| (7)解除挂失||\n";
+	cout << "\t\t|| (8)解除锁定||\n";
+	cout << "\t\t|| (9)退出系统||\n";
+	while (1) {
+		cout << "\n\n\t\t 请选择操作(1--9):< >\b\b";
+		cin >> v; 
+		`if (v < 1 || v>9)
+		{
+			cout << "\n\n\t\t 您的输入有误，请输入数字1-9选择操作\b\b";
+		}
+		else break;
+	}
+	switch (v)
+	{
+	case 1:CreatAccount(); break;
+	case 2:UsersLogIn(); break;
+	case 3:ReportTheLost(); break;
+	case 4:ResetPassword(); break;
+	case 5:CancelUsers(); break;
+	case 6:InquiryUsers(); break;
+	case 7:Unlost(); break;
+	case 8:UnLock(); break;
+	case 9:exit(0);
+	}
+}
+int main()
+{
+	while (1)
+	{
+		s.Menu();
+	}
+	return 0;
+}
+
